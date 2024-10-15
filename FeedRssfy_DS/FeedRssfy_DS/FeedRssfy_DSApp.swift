@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct FeedRssfy_DSApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RSSreaderView()
+                .modelContainer(for: FeedURL.self)
         }
     }
 }
