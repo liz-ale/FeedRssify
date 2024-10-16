@@ -28,7 +28,7 @@ struct RSSreaderView: View {
                 } else {
                     List {
                         ForEach(feeds) { feed in
-                            NavigationLink(destination: WebView(url: URL(string: feed.url))) {
+                            NavigationLink(destination: WebView(url: feed.url)) {
                                 VStack(alignment: .leading) {
                                     Text(feed.name)
                                         .font(.headline)
@@ -69,8 +69,12 @@ struct RSSreaderView: View {
             }
             .alert("Nuevo Feed", isPresented: $isShowingAlert) {
                 TextField("Nombre", text: $newFeedName)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
                 TextField("URL", text: $newFeedURL)
                     .keyboardType(.URL)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
                 
                 Button("Guardar", action: saveFeed)
                 Button("Cancelar", role: .cancel, action: { })
