@@ -8,6 +8,10 @@
 import SwiftUI
 import SwiftData
 
+import SwiftUI
+import Foundation
+import SwiftData
+
 struct RSSreaderView: View {
     @Environment(\.modelContext) private var context
     @Query private var feeds: [FeedURL]
@@ -15,42 +19,58 @@ struct RSSreaderView: View {
     @State private var isShowingAlert = false
     @State private var newFeedName: String = ""
     @State private var newFeedURL: String = ""
-    @State private var isRefreshing = false
+    @State private var rssItems: [RSSItem] = []  // Para almacenar las noticias
     
     var body: some View {
         NavigationView {
             VStack {
-                if feeds.isEmpty {
+                if rssItems.isEmpty {
                     Text("Aún no hay noticias que mostrar")
                         .font(.title2)
                         .foregroundColor(.gray)
                         .padding()
                 } else {
-                    List {
-                        ForEach(feeds) { feed in
-                            NavigationLink(destination: WebView(url: feed.url)) {
-                                VStack(alignment: .leading) {
-                                    Text(feed.name)
-                                        .font(.headline)
-                                    Text(feed.url)
-                                        .font(.subheadline)
+                    List(rssItems) { item in
+                        NavigationLink(destination: WebViewContainer(url: item.link)) {
+                            HStack {
+                                // Cargar imagen si está disponible
+                                if let imageURL = item.imageURL, let url = URL(string: imageURL) {
+                                    AsyncImage(url: url) { image in
+                                        image
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 50, height: 50)
+                                    } placeholder: {
+                                        Image(systemName: "photo")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 50, height: 50)
+                                            .foregroundColor(.gray)
+                                    }
+                                } else {
+                                    Image(systemName: "photo")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 50, height: 50)
                                         .foregroundColor(.gray)
                                 }
-                            }
-                            .swipeActions {
-                                Button("Delete") {
-                                    context.delete(feed)
+                                
+                                VStack(alignment: .leading) {
+                                    Text(item.title)
+                                        .font(.headline)
+                                    Text(item.feedName)
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                    Text(item.pubDate)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
                                 }
                             }
                         }
-                        
                     }
-//                    .refreshable {
-//                        await refreshFeeds()
-//                    }
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitle("RSSfy", displayMode: .inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -59,12 +79,6 @@ struct RSSreaderView: View {
                         Image(systemName: "note.text.badge.plus")
                         Text("Feed")
                     }
-                }
-                ToolbarItem(placement: .principal) {
-                    Text("RSSfy")
-                        .font(.largeTitle)
-                        .fontWeight(.heavy)
-                        .foregroundColor(.primary)
                 }
             }
             .alert("Nuevo Feed", isPresented: $isShowingAlert) {
@@ -81,23 +95,58 @@ struct RSSreaderView: View {
             } message: {
                 Text("Introduce el nombre y la URL del feed.")
             }
+            .onAppear {
+                // Cargar noticias del primer feed
+                if let firstFeed = feeds.first {
+                    loadRSSFeed(from: firstFeed.url, feedName: firstFeed.name)
+                }
+            }
         }
         .navigationViewStyle(.stack)
     }
     
-//    private func refreshFeeds() async {
-//        isRefreshing = true
-//        try? await Task.sleep(nanoseconds: 1_000_000_000)
-//        isRefreshing = false
-//    }
-
     private func saveFeed() {
         guard !newFeedName.isEmpty, !newFeedURL.isEmpty else { return }
         
         let newFeed = FeedURL(name: newFeedName, url: newFeedURL)
         context.insert(newFeed)
         
+        // Cargar las noticias del nuevo feed
+        loadRSSFeed(from: newFeedURL, feedName: newFeedName)
+    }
 
+    private func loadRSSFeed(from urlString: String, feedName: String) {
+        guard let url = URL(string: urlString) else { return }
+        
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data {
+                parseRSS(data: data, feedName: feedName)
+            }
+        }
+        task.resume()
+    }
+    
+    private func parseRSS(data: Data, feedName: String) {
+        let parser = XMLParser(data: data)
+        let rssParserDelegate = RSSParserDelegate(feedName: feedName)
+        parser.delegate = rssParserDelegate
+        
+        if parser.parse() {
+            DispatchQueue.main.async {
+                self.rssItems = rssParserDelegate.items
+            }
+        }
+    }
+}
+
+struct WebViewContainer: View {
+    let url: String
+    
+    var body: some View {
+        WebView(url: url)
+            .navigationTitle("Feed")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(false) // Muestra el botón de regresar
     }
 }
 
