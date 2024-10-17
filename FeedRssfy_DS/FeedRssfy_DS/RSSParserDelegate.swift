@@ -13,6 +13,7 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
     var currentTitle: String = ""
     var currentLink: String = ""
     var currentPubDate: String = ""
+    var currentDescription: String = ""  // Para manejar CDATA
     var currentImageURL: String? = nil
     var feedName: String
     
@@ -26,11 +27,12 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
             currentTitle = ""
             currentLink = ""
             currentPubDate = ""
+            currentDescription = ""  // Reiniciar descripción
             currentImageURL = nil
         }
         
-        // Si hay una imagen
-        if elementName == "media:thumbnail" || elementName == "enclosure", let url = attributeDict["url"] {
+        // Manejar imágenes
+        if elementName == "media:thumbnail" || elementName == "enclosure" || elementName == "media:content", let url = attributeDict["url"] {
             currentImageURL = url
         }
     }
@@ -43,6 +45,8 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
             currentLink += string
         case "pubDate":
             currentPubDate += string
+        case "description":
+            currentDescription += string
         default:
             break
         }
@@ -50,6 +54,10 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
     
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         if elementName == "item" {
+            if currentImageURL == nil {
+                currentImageURL = extractImageURL(from: currentDescription)
+            }
+
             let rssItem = RSSItem(
                 title: currentTitle.trimmingCharacters(in: .whitespacesAndNewlines),
                 link: currentLink.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -60,4 +68,20 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
             items.append(rssItem)
         }
     }
+    
+    // Extraer la URL de imagen del contenido HTML (en caso de estar dentro del CDATA en <description>)
+    private func extractImageURL(from description: String) -> String? {
+        // Usar expresiones regulares para encontrar una imagen en un <img src="..."> dentro del contenido
+        let pattern = "(?i)<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>"
+        if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
+            let nsString = description as NSString
+            let results = regex.firstMatch(in: description, options: [], range: NSRange(location: 0, length: nsString.length))
+            if let matchRange = results?.range(at: 1) {
+                return nsString.substring(with: matchRange)
+            }
+        }
+        return nil
+    }
 }
+
+

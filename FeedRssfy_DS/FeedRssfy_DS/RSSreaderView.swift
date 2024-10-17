@@ -8,10 +8,6 @@
 import SwiftUI
 import SwiftData
 
-import SwiftUI
-import Foundation
-import SwiftData
-
 struct RSSreaderView: View {
     @Environment(\.modelContext) private var context
     @Query private var feeds: [FeedURL]
