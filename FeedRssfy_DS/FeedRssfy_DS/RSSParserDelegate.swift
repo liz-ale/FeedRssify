@@ -13,7 +13,7 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
     var currentTitle: String = ""
     var currentLink: String = ""
     var currentPubDate: String = ""
-    var currentDescription: String = ""  // Para manejar CDATA
+    var currentDescription: String = ""  
     var currentImageURL: String? = nil
     var feedName: String
     
@@ -31,7 +31,6 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
             currentImageURL = nil
         }
         
-        // Manejar imágenes
         if elementName == "media:thumbnail" || elementName == "enclosure" || elementName == "media:content", let url = attributeDict["url"] {
             currentImageURL = url
         }
