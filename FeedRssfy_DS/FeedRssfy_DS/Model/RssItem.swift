@@ -13,9 +13,9 @@ class RSSItem: Identifiable {
     var id = UUID()
     var title: String
     var link: String
-    var pubDate: String // Fecha de publicación
-    var feedName: String // Nombre del feed (ingresado por el usuario)
-    var imageURL: String? // Imagen de la noticia (opcional)
+    var pubDate: String
+    var feedName: String
+    var imageURL: String?
     
     init(title: String, link: String, pubDate: String, feedName: String, imageURL: String?) {
         self.title = title
