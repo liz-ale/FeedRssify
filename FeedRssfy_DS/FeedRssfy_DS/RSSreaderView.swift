@@ -15,7 +15,7 @@ struct RSSreaderView: View {
     @State private var isShowingAlert = false
     @State private var newFeedName: String = ""
     @State private var newFeedURL: String = ""
-    @State private var rssItems: [RSSItem] = []  // Para almacenar las noticias
+    @State private var rssItems: [RSSItem] = []  
     
     var body: some View {
         NavigationView {
@@ -27,9 +27,9 @@ struct RSSreaderView: View {
                         .padding()
                 } else {
                     List(rssItems) { item in
-                        NavigationLink(destination: WebViewContainer(url: item.link)) {
+                        NavigationLink(destination: DetailFeedView(item: item)) {
                             HStack {
-                                // Cargar imagen si está disponible
+                                // Mostrar imagen si está disponible
                                 if let imageURL = item.imageURL, let url = URL(string: imageURL) {
                                     AsyncImage(url: url) { image in
                                         image

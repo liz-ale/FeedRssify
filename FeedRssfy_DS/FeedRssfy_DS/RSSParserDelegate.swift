@@ -13,7 +13,7 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
     var currentTitle: String = ""
     var currentLink: String = ""
     var currentPubDate: String = ""
-    var currentDescription: String = ""  
+    var currentDescription: String = ""  // Variable para la descripción
     var currentImageURL: String? = nil
     var feedName: String
     
@@ -27,7 +27,7 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
             currentTitle = ""
             currentLink = ""
             currentPubDate = ""
-            currentDescription = ""  // Reiniciar descripción
+            currentDescription = ""  
             currentImageURL = nil
         }
         
@@ -45,7 +45,7 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
         case "pubDate":
             currentPubDate += string
         case "description":
-            currentDescription += string
+            currentDescription += string  // Guardar la descripción
         default:
             break
         }
@@ -62,7 +62,8 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
                 link: currentLink.trimmingCharacters(in: .whitespacesAndNewlines),
                 pubDate: currentPubDate.trimmingCharacters(in: .whitespacesAndNewlines),
                 feedName: feedName,
-                imageURL: currentImageURL
+                imageURL: currentImageURL,
+                detail: currentDescription.trimmingCharacters(in: .whitespacesAndNewlines)  // Añadir descripción
             )
             items.append(rssItem)
         }
@@ -70,7 +71,6 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
     
     // Extraer la URL de imagen del contenido HTML (en caso de estar dentro del CDATA en <description>)
     private func extractImageURL(from description: String) -> String? {
-        // Usar expresiones regulares para encontrar una imagen en un <img src="..."> dentro del contenido
         let pattern = "(?i)<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>"
         if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
             let nsString = description as NSString
@@ -82,5 +82,3 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
         return nil
     }
 }
-
-

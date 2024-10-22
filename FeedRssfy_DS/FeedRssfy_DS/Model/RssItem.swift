@@ -16,12 +16,14 @@ class RSSItem: Identifiable {
     var pubDate: String
     var feedName: String
     var imageURL: String?
+    var detail: String
     
-    init(title: String, link: String, pubDate: String, feedName: String, imageURL: String?) {
+    init(title: String, link: String, pubDate: String, feedName: String, imageURL: String?, detail: String) {
         self.title = title
         self.link = link
         self.pubDate = pubDate
         self.feedName = feedName
         self.imageURL = imageURL
+        self.detail = detail
     }
 }
