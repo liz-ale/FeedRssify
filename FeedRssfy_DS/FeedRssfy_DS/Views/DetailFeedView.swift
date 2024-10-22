@@ -14,7 +14,7 @@ struct DetailFeedView: View {
     @State private var isDarkMode: Bool = false
     @State private var selectedFont: Font = .body
     @State private var showSettingsSheet = false
-    
+
     var body: some View {
         VStack {
             ScrollView {
@@ -33,14 +33,14 @@ struct DetailFeedView: View {
                             .foregroundColor(.gray)
                     }
                 }
-                
+
                 // Título
                 Text(item.title)
                     .font(selectedFont)
                     .fontWeight(.bold)
                     .font(.system(size: selectedFontSize))
                     .padding(.top, 10)
-                
+
                 // Autor y fecha
                 HStack {
                     Text("Por: \(item.feedName)")
@@ -51,7 +51,7 @@ struct DetailFeedView: View {
                         .foregroundColor(.gray)
                 }
                 .padding([.top, .leading, .trailing], 16)
-                
+
                 // Mostrar la descripción completa con formato
                 if let formattedContent = AttributedString(html: item.detail) {
                     Text(formattedContent)
@@ -61,25 +61,25 @@ struct DetailFeedView: View {
                     Text(item.detail)
                         .font(.system(size: selectedFontSize))
                         .padding([.top, .leading, .trailing], 16)
-                                }
+                }
             }
         }
         //.navigationTitle("Detalle de Noticia")
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
-                
+
                 Button(action: {
                     shareArticle()
                 }) {
                     Image(systemName: "square.and.arrow.up")
                 }
-               
+
                 Button(action: {
                     openInBrowser(url: item.link)
                 }) {
                     Image(systemName: "safari")
                 }
-                
+
                 Button(action: {
                     showSettingsSheet.toggle()
                 }) {
@@ -92,18 +92,19 @@ struct DetailFeedView: View {
         }
         .preferredColorScheme(isDarkMode ? .dark : .light)  // Cambiar tema
     }
-    
+
     private func shareArticle() {
         let activityVC = UIActivityViewController(activityItems: [item.link], applicationActivities: nil)
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
             windowScene.windows.first?.rootViewController?.present(activityVC, animated: true, completion: nil)
         }
     }
-   
+
     private func openInBrowser(url: String) {
         if let articleURL = URL(string: url) {
             UIApplication.shared.open(articleURL)
         }
     }
 }
+
 
