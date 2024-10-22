@@ -13,7 +13,8 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
     var currentTitle: String = ""
     var currentLink: String = ""
     var currentPubDate: String = ""
-    var currentDescription: String = ""  // Variable para la descripción
+    var currentDescription: String = ""
+    var currentContent: String = ""  // Para almacenar el contenido completo
     var currentImageURL: String? = nil
     var feedName: String
     
@@ -27,10 +28,12 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
             currentTitle = ""
             currentLink = ""
             currentPubDate = ""
-            currentDescription = ""  
+            currentDescription = ""
+            currentContent = ""  // Reiniciar contenido completo
             currentImageURL = nil
         }
         
+        // Detectar la imagen si está presente
         if elementName == "media:thumbnail" || elementName == "enclosure" || elementName == "media:content", let url = attributeDict["url"] {
             currentImageURL = url
         }
@@ -45,7 +48,9 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
         case "pubDate":
             currentPubDate += string
         case "description":
-            currentDescription += string  // Guardar la descripción
+            currentDescription += string
+        case "content:encoded":  // Contenido completo
+            currentContent += string
         default:
             break
         }
@@ -56,14 +61,17 @@ class RSSParserDelegate: NSObject, XMLParserDelegate {
             if currentImageURL == nil {
                 currentImageURL = extractImageURL(from: currentDescription)
             }
-
+            
+            // Decidir qué usar, si `content:encoded` está disponible, se prefiere
+            let fullContent = currentContent.isEmpty ? currentDescription : currentContent
+            
             let rssItem = RSSItem(
                 title: currentTitle.trimmingCharacters(in: .whitespacesAndNewlines),
                 link: currentLink.trimmingCharacters(in: .whitespacesAndNewlines),
                 pubDate: currentPubDate.trimmingCharacters(in: .whitespacesAndNewlines),
                 feedName: feedName,
                 imageURL: currentImageURL,
-                detail: currentDescription.trimmingCharacters(in: .whitespacesAndNewlines)  // Añadir descripción
+                detail: fullContent
             )
             items.append(rssItem)
         }

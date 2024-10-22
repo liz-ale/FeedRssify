@@ -52,14 +52,19 @@ struct DetailFeedView: View {
                 }
                 .padding([.top, .leading, .trailing], 16)
                 
-                // Descripción (Nuevo campo mostrado)
-                Text(item.detail.htmlToString())  // Utilizamos la función que limpia el HTML
-                    .font(selectedFont)
-                    .font(.system(size: selectedFontSize))
-                    .padding([.top, .leading, .trailing], 16)
+                // Mostrar la descripción completa con formato
+                if let formattedContent = AttributedString(html: item.detail) {
+                    Text(formattedContent)
+                        .font(.system(size: selectedFontSize))
+                        .padding([.top, .leading, .trailing], 16)
+                } else {
+                    Text(item.detail)
+                        .font(.system(size: selectedFontSize))
+                        .padding([.top, .leading, .trailing], 16)
+                                }
             }
         }
-        .navigationTitle("Detalle de Noticia")
+        //.navigationTitle("Detalle de Noticia")
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 
@@ -88,15 +93,13 @@ struct DetailFeedView: View {
         .preferredColorScheme(isDarkMode ? .dark : .light)  // Cambiar tema
     }
     
-    // Función para compartir el artículo
     private func shareArticle() {
         let activityVC = UIActivityViewController(activityItems: [item.link], applicationActivities: nil)
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
             windowScene.windows.first?.rootViewController?.present(activityVC, animated: true, completion: nil)
         }
     }
-    
-    // Función para abrir en el navegador
+   
     private func openInBrowser(url: String) {
         if let articleURL = URL(string: url) {
             UIApplication.shared.open(articleURL)

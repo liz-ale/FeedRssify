@@ -30,13 +30,11 @@ struct SettingsView: View {
             .pickerStyle(SegmentedPickerStyle())
             .padding()
             
-            // Cambiar tema
             Toggle(isOn: $isDarkMode) {
                 Text("Modo oscuro")
             }
             .padding()
             
-            // Cambiar fuente
             Text("Fuente")
             Picker("Fuente", selection: $selectedFont) {
                 Text("Default").tag(Font.body)
